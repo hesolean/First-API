@@ -9,6 +9,7 @@
 <body>
     <h1>Books API Interface</h1>
 
+    <!-- Affiche les livres et le bouton pour lancer la récupération des livres -->
     <h2>Get Books</h2>
     <table id="booksTable">
         <thead>
@@ -25,6 +26,7 @@
     <button class="centered-button" onclick="getBooks()">Get Books</button>
     <pre id="books" style="display: none;"></pre>
 
+    <!-- Champs pour ajouter un livre avec le bouton de validation -->
     <h2>Add Book</h2>
     <form id="addBookForm">
         <div class="form-group">
@@ -48,6 +50,7 @@
     </form>
     <pre id="addBookResponse" style="display: none;"></pre>
 
+    <!-- Champs pour la mise à jour d'un livre avec le bouton de validation -->
     <h2>Update Book</h2>
     <form id="updateBookForm">
         <div class="form-group">
@@ -76,6 +79,7 @@
     </form>
     <pre id="updateBookResponse"  style="display: none;"></pre>
 
+    <!-- Zone de suppression d'un livre -->
     <h2>Delete Book</h2>
     <form id="deleteBookForm">
         <div class="form-group">
@@ -86,15 +90,15 @@
         <button class="centered-button" type="submit">Delete Book</button>
     </form>
     <pre id="deleteBookForm"></pre>
-    
-    
 
+    <!-- Javascript pour dynamiser la page -->
     <script>
 
         // Fonction pour afficher les livres dans le tableau
         function displayBooks(books) {
             const booksBody = document.getElementById('booksBody');
-            booksBody.innerHTML = ''; // Réinitialiser le contenu de la tbody
+            // Réinitialiser le contenu de la tbody
+            booksBody.innerHTML = ''; 
 
             books.forEach(book => {
                 const row = document.createElement('tr');
@@ -108,7 +112,9 @@
             });
         }
 
+        // Fonction pour lancer la requète de récupération des libres de l'API
         async function getBooks() {
+            // Teste la réussite de la requète sinon renvoie l'erreur
             try {
                 const response = await fetch('http://127.0.0.1:5000/books');
                 if (!response.ok) {
@@ -123,9 +129,10 @@
             }
         }
 
+        // Fonction pour lancer l'ajout d'un livre
         document.getElementById('addBookForm').addEventListener('submit', async function (event) {
             event.preventDefault();
-
+            // Initialise la liste des id existants
             let ids = [];
 
             // Récupération des livres
@@ -136,10 +143,11 @@
                 ids.push(books[i].id);
             }
 
+            // Initialisation de l'id à attribuer pour le nouveau livre
             let id;
             let found = false;
 
-            // Génération d'un ID unique
+            // Génération d'un id unique
             while (!found) {
                 id = Math.floor(Math.random() * 100) + 1;
                 if (!ids.includes(id)) {
@@ -147,8 +155,10 @@
                 }
             }
 
+            // Initialisation des variables à tester dans le try
             let title, author, published;
-            // Validation des données
+
+            // Validation du typage des données
             try {
                 title = document.getElementById('title').value;
                 if (typeof title !== 'string' || title.trim() === '') {
@@ -168,6 +178,8 @@
             } catch (error) {
                 console.error('Validation Error:', error.message);
             }
+
+            // Récapitulation des données dans une variable
             let jsonData = {
                 'id': id,
                 'title': title,
@@ -184,6 +196,7 @@
                 body: JSON.stringify(jsonData)
             });
 
+            // Teste la réponse
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Server Error:', errorData);
@@ -191,21 +204,27 @@
             }
             else {
                 const data = await response.json();
+                // Affiche un message d'erreur
                 const addedMessage = document.getElementById('addedMessage');
                 addedMessage.textContent = 'Book added successfully !!!'; 
                 document.getElementById('addBookResponse').textContent = JSON.stringify(data, null, 2); 
+                // Vide les champs
                 document.getElementById('addBookForm').reset()
                 await getBooks();
             }
         });
 
+        // Mise à jour des données d'un livre selon son id
         document.getElementById('updateBookForm').addEventListener('submit', async function (event) {
             event.preventDefault();
+
+            // Récupération des données des champs
             const id = document.getElementById('id').value;
             const title = document.getElementById('updateTitle').value;
             const author = document.getElementById('updateAuthor').value;
             const published = document.getElementById('updatePublished').value;
 
+            // Envoie des nouvelles données
             const response = await fetch(`/books/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -214,18 +233,27 @@
                 body: JSON.stringify({ id, title, author, published })
             });
             const data = await response.json();
+
+            // Affiche le message de succès
             const updatedMessage = document.getElementById('updatedMessage');
             updatedMessage.textContent = 'Book updated successfully !!!'; 
             document.getElementById('updateBookResponse').textContent = JSON.stringify(data, null, 2);
+
+            // Vide les champs
             document.getElementById('updateBookForm').reset()
+
+            // Raffraichis la liste des livres
             await getBooks();
         });
 
+        // Suppression d'un livre par son id
         document.getElementById('deleteBookForm').addEventListener('submit', async function (event) {
             event.preventDefault();
+
+            // Récupère l'id du champ
             const id = document.getElementById('id_del').value;
 
-            console.log(id)
+            // Lance la requète
             const response = await fetch(`/books/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -233,14 +261,22 @@
                 },
                 body: JSON.stringify({ id })
             });
+
+            // Vérifie la réponse
             if (!response.ok) {
                 const errorMessage = await response.text();
                 console.error('Error:', errorMessage);
             } else {
                 const data = await response.json();
+
+                // Affiche un message de succés
                 const deleteMessage = document.getElementById('deleteMessage');
-                document.getElementById('deleteBookForm').reset()
                 deleteMessage.textContent = 'Book deleted successfully !!!';
+
+                // Reset le champ
+                document.getElementById('deleteBookForm').reset()
+
+                // Mets à jour la liste
                 await getBooks();
             }
         });

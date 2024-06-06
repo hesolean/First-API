@@ -11,6 +11,7 @@ def favicon():
 # Enregistrer le blueprint des livres avec le préfixe /books
 app.register_blueprint(books_bp, url_prefix='/books')
 
+# Route principale
 @app.route('/')
 def index():
     return render_template('index.html')
