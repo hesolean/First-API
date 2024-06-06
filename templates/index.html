@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books API Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Books API Interface</h1>
+
+    <h2>Get Books</h2>
+    <table id="booksTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Published Year</th>
+            </tr>
+        </thead>
+        <tbody id="booksBody">
+        </tbody>
+    </table>
+    <button class="centered-button" onclick="getBooks()">Get Books</button>
+    <pre id="books" style="display: none;"></pre>
+
+    <h2>Add Book</h2>
+    <form id="addBookForm">
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title">
+        </div>
+        
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author">
+        </div>
+        
+        <div class="form-group">
+            <label for="published">Published Year:</label>
+            <input type="number" id="published" name="published">
+        </div>
+        
+        <div class="added" id="addedMessage"></div> 
+
+        <button class="centered-button" type="submit">Add Book</button>
+    </form>
+    <pre id="addBookResponse" style="display: none;"></pre>
+
+    <h2>Update Book</h2>
+    <form id="updateBookForm">
+        <div class="form-group">
+            <label for="id">ID:</label>
+            <input type="number" id="id" name="id">
+        </div>
+
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="updateTitle" name="title">
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="updateAuthor" name="author">
+        </div>
+
+        <div class="form-group">
+            <label for="published">Published Year:</label>
+            <input type="number" id="updatePublished" name="published">
+        </div>
+        
+        <div class="updated" id="updatedMessage"></div> 
+
+        <button class="centered-button" type="submit">Update Book</button>
+    </form>
+    <pre id="updateBookResponse"  style="display: none;"></pre>
+
+    <h2>Delete Book</h2>
+    <form id="deleteBookForm">
+        <div class="form-group">
+            <label for="id_del">ID:</label>
+            <input type="number" id="id_del" name="id_del">
+        </div>
+        <div class="deleted" id="deleteMessage"></div> 
+        <button class="centered-button" type="submit">Delete Book</button>
+    </form>
+    <pre id="deleteBookForm"></pre>
+    
+    
+
+    <script>
+
+        // Fonction pour afficher les livres dans le tableau
+        function displayBooks(books) {
+            const booksBody = document.getElementById('booksBody');
+            booksBody.innerHTML = ''; // Réinitialiser le contenu de la tbody
+
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${book.id}</td>
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td>${book.published}</td>
+                `;
+                booksBody.appendChild(row);
+            });
+        }
+
+        async function getBooks() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/books');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                document.getElementById('books').textContent = JSON.stringify(data, null, 2);
+                displayBooks(data); // Afficher les livres dans le tableau
+                return data;
+            } catch (error) {
+                console.error('Fetch Error:', error.message);
+            }
+        }
+
+        document.getElementById('addBookForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            let ids = [];
+
+            // Récupération des livres
+            const books = await getBooks();
+
+            // Extraction des ids des livres existants
+            for (let i = 0; i < books.length; i++) {
+                ids.push(books[i].id);
+            }
+
+            let id;
+            let found = false;
+
+            // Génération d'un ID unique
+            while (!found) {
+                id = Math.floor(Math.random() * 100) + 1;
+                if (!ids.includes(id)) {
+                    found = true;
+                }
+            }
+
+            let title, author, published;
+            // Validation des données
+            try {
+                title = document.getElementById('title').value;
+                if (typeof title !== 'string' || title.trim() === '') {
+                    throw new Error('Invalid data type for title');
+                }
+                author = document.getElementById('author').value;
+                if (typeof author !== 'string' || author.trim() === '') {
+                    throw new Error('Invalid data type for author');
+                }
+                published = document.getElementById('published').value;
+                if (typeof published !== 'string' || published.trim() === '') {
+                    throw new Error('Invalid data type for published');
+                }
+                if (typeof id !== 'number') {
+                    throw new Error('Invalid data type for id');
+                }
+            } catch (error) {
+                console.error('Validation Error:', error.message);
+            }
+            let jsonData = {
+                'id': id,
+                'title': title,
+                'author': author,
+                'published': published
+            };
+
+            // Envoi des données au serveur
+            const response = await fetch('http://127.0.0.1:5000/books/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Server Error:', errorData);
+                throw new Error(errorData.error || 'Something went wrong');
+            }
+            else {
+                const data = await response.json();
+                const addedMessage = document.getElementById('addedMessage');
+                addedMessage.textContent = 'Book added successfully !!!'; 
+                document.getElementById('addBookResponse').textContent = JSON.stringify(data, null, 2); 
+                document.getElementById('addBookForm').reset()
+                await getBooks();
+            }
+        });
+
+        document.getElementById('updateBookForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const id = document.getElementById('id').value;
+            const title = document.getElementById('updateTitle').value;
+            const author = document.getElementById('updateAuthor').value;
+            const published = document.getElementById('updatePublished').value;
+
+            const response = await fetch(`/books/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, title, author, published })
+            });
+            const data = await response.json();
+            const updatedMessage = document.getElementById('updatedMessage');
+            updatedMessage.textContent = 'Book updated successfully !!!'; 
+            document.getElementById('updateBookResponse').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('updateBookForm').reset()
+            await getBooks();
+        });
+
+        document.getElementById('deleteBookForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const id = document.getElementById('id_del').value;
+
+            console.log(id)
+            const response = await fetch(`/books/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            });
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                console.error('Error:', errorMessage);
+            } else {
+                const data = await response.json();
+                const deleteMessage = document.getElementById('deleteMessage');
+                document.getElementById('deleteBookForm').reset()
+                deleteMessage.textContent = 'Book deleted successfully !!!';
+                await getBooks();
+            }
+        });
+    </script>
+</body>
+</html>

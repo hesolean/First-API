@@ -1,0 +1,60 @@
+/* Exemple de règle CSS */
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: pink;
+    color: darkgray
+}
+
+h1 {
+    text-align: center;
+    text-transform: uppercase;
+    color: rgb(43, 42, 42)
+}
+
+h2 {
+    text-decoration: underline;
+    padding-left: 50px;
+}
+
+label, input {
+    margin: 5px;
+    padding-left: 100px;
+}
+
+.form-group {
+    margin: 15px;
+}
+
+.centered-button {
+    display: block;
+    width: 200px;
+    margin: 0 auto;
+    background-color: #72555a;
+    font-size: large;
+    color: lightgray
+}
+
+.deleted {
+    color: red;
+    font-size: x-large;
+}
+
+table {
+    width: 80%;
+    margin: 0 auto;
+    padding-bottom: 15px;
+}
+
+table th, tbody {
+    text-align: center;
+}
+
+.added {
+    color: green;
+    font-size: x-large;
+}
+
+.updated {
+    color: orange;
+    font-size: x-large;
+}
