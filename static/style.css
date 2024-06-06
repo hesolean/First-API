@@ -34,7 +34,7 @@ label, input {
     color: lightgray
 }
 
-.deleted {
+.deleted, .notAdded, .notUpdated {
     color: red;
     font-size: x-large;
 }
